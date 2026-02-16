@@ -1,805 +1,789 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="ru">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2685.3">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge 100 - Соединяй и Развивайся</title>
+    <style>
+      body
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+         {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: white;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        h1 {
+            font-size: 3em;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-top: 5px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        .coins { color: #ffd700; }
+        .exp { color: #4ecdc4; }
+        .level { color: #ff6b6b; }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            max-width: 800px;
+            margin: 0 auto 30px;
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .item {
+            aspect-ratio: 1;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+            overflow: hidden;
+            font-weight: bold;
+            font-size: 1.2em;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.3);
+            user-select: none;
+        }
+
+        .item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .item:hover {
+            transform: scale(1.1) rotate(3deg);
+            z-index: 10;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+        }
+
+        .item.selected {
+            animation: pulse 0.5s infinite alternate;
+            border-color: #fff;
+            box-shadow: 0 0 30px rgba(255,255,255,0.6);
+        }
+
+        .item.merging {
+            animation: mergePop 0.6s ease;
+        }
+
+        .item-level {
+            font-size: 1.5em;
+            z-index: 1;
+        }
+
+        .item-icon {
+            font-size: 2em;
+            margin-bottom: 5px;
+            z-index: 1;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .shop {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .shop h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .shop-items {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .shop-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            min-width: 150px;
+        }
+
+        .shop-item:hover {
+            border-color: #ffd700;
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.15);
+        }
+
+        .shop-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #44a3aa);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+        }
+
+        .floating-text {
+            position: fixed;
+            pointer-events: none;
+            font-weight: bold;
+            font-size: 1.5em;
+            animation: floatUp 1s ease-out forwards;
+            z-index: 1000;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .victory-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 2000;
+            animation: fadeIn 0.5s;
+        }
+
+        .victory-screen.active {
+            display: flex;
+        }
+
+        .victory-title {
+            font-size: 4em;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b, #4ecdc4, #ffd700);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient 3s ease infinite;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        @keyframes mergePop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); filter: brightness(1.5); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: particleFloat 1s ease-out forwards;
+        }
+
+        @keyframes particleFloat {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
+        }
+
+        .info-panel {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .max-level {
+            animation: rainbow 2s linear infinite;
+        }
+
+        @keyframes rainbow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;html lang="ru"&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;Merge 100 - Соединяй и Развивайся&lt;/title&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>* {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-sizing: border-box;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>body {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>min-height: 100vh;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow-x: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.game-container {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>max-width: 1200px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin: 0 auto;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.header {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 30px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>animation: fadeInDown 0.8s ease;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>h1 {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 3em;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-shadow: 0 0 20px rgba(255,255,255,0.5);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(45deg, #ffd700, #ff6b6b, #4ecdc4);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>-webkit-background-clip: text;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>-webkit-text-fill-color: transparent;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-clip: text;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.stats {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 40px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex-wrap: wrap;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.stat-box {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(255,255,255,0.1);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>backdrop-filter: blur(10px);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 15px 30px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: 1px solid rgba(255,255,255,0.2);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 8px 32px rgba(0,0,0,0.3);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: transform 0.3s, box-shadow 0.3s;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.stat-box:hover {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transform: translateY(-5px);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 12px 40px rgba(0,0,0,0.4);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.stat-label {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.9em;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>opacity: 0.8;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-transform: uppercase;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>letter-spacing: 2px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.stat-value {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 2em;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: bold;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-top: 5px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-shadow: 0 0 10px rgba(255,255,255,0.3);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.coins { color: #ffd700; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.exp { color: #4ecdc4; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.level { color: #ff6b6b; }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.game-area {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: grid;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>max-width: 800px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin: 0 auto 30px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(0,0,0,0.2);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>backdrop-filter: blur(5px);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.item {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>aspect-ratio: 1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex-direction: column;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: relative;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: bold;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 1.2em;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 4px 15px rgba(0,0,0,0.3);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: 2px solid rgba(255,255,255,0.3);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>user-select: none;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.item::before {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>content: '';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: absolute;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>top: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>left: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>right: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>bottom: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>pointer-events: none;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.item:hover {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transform: scale(1.1) rotate(3deg);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>z-index: 10;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 8px 25px rgba(0,0,0,0.5);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.item.selected {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>animation: pulse 0.5s infinite alternate;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-color: #fff;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 0 30px rgba(255,255,255,0.6);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.item.merging {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>animation: mergePop 0.6s ease;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.item-level {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 1.5em;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>z-index: 1;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.item-icon {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 2em;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 5px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>z-index: 1;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.controls {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 15px 40px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 1.1em;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 50px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin: 0 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: all 0.3s;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 4px 15px rgba(0,0,0,0.3);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-transform: uppercase;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>letter-spacing: 1px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: bold;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn:hover {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transform: translateY(-3px);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 8px 25px rgba(0,0,0,0.4);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn:active {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transform: translateY(-1px);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn:disabled {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>opacity: 0.5;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: not-allowed;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transform: none;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.shop {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(255,255,255,0.05);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-top: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>backdrop-filter: blur(10px);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.shop h2 {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #ffd700;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.shop-items {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex-wrap: wrap;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.shop-item {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(255,255,255,0.1);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: all 0.3s;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: 2px solid transparent;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>min-width: 150px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.shop-item:hover {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-color: #ffd700;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transform: translateY(-5px);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(255,255,255,0.15);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.shop-item.disabled {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>opacity: 0.5;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: not-allowed;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.progress-bar {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(0,0,0,0.3);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 5px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-top: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: relative;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.progress-fill {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(90deg, #4ecdc4, #44a3aa);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: width 0.3s ease;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.floating-text {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: fixed;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>pointer-events: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: bold;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 1.5em;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>animation: floatUp 1s ease-out forwards;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>z-index: 1000;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-shadow: 0 0 10px rgba(0,0,0,0.5);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.victory-screen {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: fixed;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>top: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>left: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>right: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>bottom: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(0,0,0,0.9);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex-direction: column;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>z-index: 2000;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>animation: fadeIn 0.5s;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.victory-screen.active {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.victory-title {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 4em;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(45deg, #ffd700, #ff6b6b, #4ecdc4, #ffd700);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-size: 400% 400%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>-webkit-background-clip: text;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>-webkit-text-fill-color: transparent;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>animation: gradient 3s ease infinite;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>@keyframes pulse {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>from { transform: scale(1); }</p>
-<p class="p1"><span class="Apple-converted-space">            </span>to { transform: scale(1.05); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>@keyframes mergePop {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>0% { transform: scale(1); }</p>
-<p class="p1"><span class="Apple-converted-space">            </span>50% { transform: scale(1.3); filter: brightness(1.5); }</p>
-<p class="p1"><span class="Apple-converted-space">            </span>100% { transform: scale(1); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>@keyframes floatUp {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>0% { opacity: 1; transform: translateY(0) scale(1); }</p>
-<p class="p1"><span class="Apple-converted-space">            </span>100% { opacity: 0; transform: translateY(-100px) scale(1.5); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>@keyframes fadeInDown {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>from { opacity: 0; transform: translateY(-30px); }</p>
-<p class="p1"><span class="Apple-converted-space">            </span>to { opacity: 1; transform: translateY(0); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>@keyframes fadeIn {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>from { opacity: 0; }</p>
-<p class="p1"><span class="Apple-converted-space">            </span>to { opacity: 1; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>@keyframes gradient {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>0% { background-position: 0% 50%; }</p>
-<p class="p1"><span class="Apple-converted-space">            </span>50% { background-position: 100% 50%; }</p>
-<p class="p1"><span class="Apple-converted-space">            </span>100% { background-position: 0% 50%; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.particles {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: fixed;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>top: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>left: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>pointer-events: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>z-index: 999;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.particle {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: absolute;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 6px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 6px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #ffd700;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 50%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>animation: particleFloat 1s ease-out forwards;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>@keyframes particleFloat {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>0% { opacity: 1; transform: translate(0, 0) scale(1); }</p>
-<p class="p1"><span class="Apple-converted-space">            </span>100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.info-panel {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(255,255,255,0.05);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.95em;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>line-height: 1.6;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.max-level {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>animation: rainbow 2s linear infinite;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>@keyframes rainbow {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>0% { filter: hue-rotate(0deg); }</p>
-<p class="p1"><span class="Apple-converted-space">            </span>100% { filter: hue-rotate(360deg); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="game-container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="header"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;h1&gt;🔥 MERGE 100 🔥&lt;/h1&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;p&gt;Соединяй одинаковые предметы, достигни 100 уровня!&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="stats"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="stat-box"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="stat-label"&gt;💰 Монеты&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="stat-value coins" id="coins"&gt;1&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="progress-bar"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="progress-fill" id="coin-progress" style="width: 0%"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="stat-box"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="stat-label"&gt;⭐ Опыт&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="stat-value exp" id="exp"&gt;0&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="stat-box"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="stat-label"&gt;🏆 Макс. Уровень&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="stat-value level" id="max-level"&gt;1&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="info-panel"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>💡 &lt;strong&gt;Совет:&lt;/strong&gt; Выбери два одинаковых предмета, чтобы соединить их.<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>Каждое соединение даёт опыт и увеличивает доход!<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;br&gt;Автодоход: &lt;span id="income-display"&gt;1&lt;/span&gt; монет/сек</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="controls"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;button class="btn" onclick="game.spawnItem()"&gt;🎲 Создать предмет (10 монет)&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;button class="btn" onclick="game.buyAutoMerge()"&gt;🤖 Авто-слияние (&lt;span id="auto-merge-cost"&gt;1000&lt;/span&gt;)&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="game-area" id="game-area"&gt;&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="shop"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;h2&gt;🛒 Магазин улучшений&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="shop-items"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="shop-item" onclick="game.buySlot()"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;📦 Новый слот&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div style="color: #ffd700; margin-top: 5px;"&gt;💰 &lt;span id="slot-cost"&gt;100&lt;/span&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="shop-item" onclick="game.boostIncome()"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;⚡ Ускорить доход x2&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div style="color: #ffd700; margin-top: 5px;"&gt;💰 &lt;span id="boost-cost"&gt;500&lt;/span&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="shop-item" onclick="game.buyHighLevel()"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;🚀 Купить уровень &lt;span id="shop-level"&gt;5&lt;/span&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div style="color: #ffd700; margin-top: 5px;"&gt;💰 &lt;span id="high-level-cost"&gt;10000&lt;/span&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="victory-screen" id="victory"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="victory-title"&gt;🎉 ПОБЕДА! 🎉&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;p style="font-size: 1.5em; margin-bottom: 30px;"&gt;Вы достигли 100 уровня!&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;p style="font-size: 1.2em; margin-bottom: 20px;"&gt;Финальный счёт: &lt;span id="final-score"&gt;&lt;/span&gt;&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;button class="btn" onclick="location.reload()"&gt;🔄 Играть снова&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;canvas class="particles" id="particles"&gt;&lt;/canvas&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>class Game {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>constructor() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.coins = 10;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.exp = 0;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.maxLevel = 1;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.items = [];</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.selectedIndex = null;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.slots = 12;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.incomeMultiplier = 1;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.baseIncome = 1;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.lastIncome = 0;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.autoMergeUnlocked = false;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.autoMergeInterval = null;</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Цены</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.costs = {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>slot: 100,</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>boost: 500,</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>autoMerge: 1000,</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>highLevel: 10000</p>
-<p class="p1"><span class="Apple-converted-space">                </span>};</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.shopLevel = 5;</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.emojis = ['🌱', '🌿', '🌲', '💎', '🔮', '⚡', '🔥', '⭐', '🌟', '💫', '🌙', '☀️', '🪐', '👑', '🏆', '🎯', '🎪', '🎨', '🎭', '🎪'];</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.colors = [</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>'#2ecc71', '#27ae60', '#229954', '#1e8449', '#1abc9c',</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>'#16a085', '#3498db', '#2980b9', '#9b59b6', '#8e44ad',</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>'#e74c3c', '#c0392b', '#f39c12', '#d68910', '#f1c40f',</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>'#d4ac0d', '#e67e22', '#d35400', '#95a5a6', '#7f8c8d',</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>'#34495e', '#2c3e50', '#1abc9c', '#16a085', '#2ecc71'</p>
-<p class="p1"><span class="Apple-converted-space">                </span>];</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.init();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>init() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.render();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.startIncome();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.spawnInitialItems();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>spawnInitialItems() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>for (let i = 0; i &lt; 4; i++) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.items.push({ level: 1 });</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.render();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>getItemColor(level) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 100) return `linear-gradient(45deg, #ffd700, #ff6b6b, #4ecdc4)`;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 90) return `linear-gradient(45deg, #ff006e, #8338ec, #3a86ff)`;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 80) return `linear-gradient(45deg, #f72585, #7209b7, #3a0ca3)`;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 70) return `linear-gradient(45deg, #ff006e, #ffbe0b, #fb5607)`;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 60) return `linear-gradient(45deg, #00f5ff, #00bbf9, #00f5d4)`;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 50) return `linear-gradient(45deg, #9b5de5, #f15bb5, #00bbf9)`;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 40) return `linear-gradient(45deg, #00bbf9, #00f5d4, #fee440)`;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 30) return `linear-gradient(45deg, #f15bb5, #fee440, #00f5d4)`;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 20) return `linear-gradient(45deg, #9b5de5, #00bbf9, #00f5d4)`;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>return this.colors[(level - 1) % this.colors.length] || '#2ecc71';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>getItemEmoji(level) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 100) return '👑';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 90) return '💎';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 80) return '🔮';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 70) return '⚡';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 60) return '🔥';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 50) return '🌟';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 40) return '⭐';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 30) return '🌙';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (level &gt;= 20) return '🪐';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>return this.emojis[(level - 1) % this.emojis.length] || '✨';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>formatNumber(num) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (num &gt;= 1e100) return num.toExponential(2);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (num &gt;= 1e18) return (num / 1e18).toFixed(1) + 'Qi';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (num &gt;= 1e15) return (num / 1e15).toFixed(1) + 'Qa';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (num &gt;= 1e12) return (num / 1e12).toFixed(1) + 'T';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (num &gt;= 1e9) return (num / 1e9).toFixed(1) + 'B';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (num &gt;= 1e6) return (num / 1e6).toFixed(1) + 'M';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (num &gt;= 1e3) return (num / 1e3).toFixed(1) + 'K';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>return Math.floor(num).toString();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>getIncome() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let income = 0;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.items.forEach(item =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>income += Math.pow(2, item.level - 1);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>});</p>
-<p class="p1"><span class="Apple-converted-space">                </span>return income * this.incomeMultiplier;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>startIncome() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>setInterval(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const income = this.getIncome();</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.coins += income;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.lastIncome = income;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.updateUI();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}, 1000);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>spawnItem() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (this.items.length &gt;= this.slots) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.showFloatingText('Нет места!', window.innerWidth/2, window.innerHeight/2, '#ff6b6b');</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (this.coins &lt; 10) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.showFloatingText('Недостаточно монет!', window.innerWidth/2, window.innerHeight/2, '#ff6b6b');</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.coins -= 10;</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Шанс получить предмет выше 1 уровня</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let level = 1;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const rand = Math.random();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (rand &gt; 0.95 &amp;&amp; this.maxLevel &gt;= 10) level = Math.min(10, Math.floor(this.maxLevel / 2));</p>
-<p class="p1"><span class="Apple-converted-space">                </span>else if (rand &gt; 0.8 &amp;&amp; this.maxLevel &gt;= 5) level = Math.min(5, Math.floor(this.maxLevel / 3));</p>
-<p class="p1"><span class="Apple-converted-space">                </span>else if (rand &gt; 0.6 &amp;&amp; this.maxLevel &gt;= 3) level = 2;</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.items.push({ level });</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.render();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.createParticles(window.innerWidth/2, window.innerHeight/2);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>selectItem(index) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (this.selectedIndex === null) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.selectedIndex = index;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.render();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>} else if (this.selectedIndex === index) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.selectedIndex = null;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.render();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.tryMerge(this.selectedIndex, index);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.selectedIndex = null;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>tryMerge(idx1, idx2) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const item1 = this.items[idx1];</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const item2 = this.items[idx2];</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (item1.level === item2.level) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>// Успешное слияние</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const newLevel = item1.level + 1;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const rect = document.querySelector(`[data-index="${idx2}"]`).getBoundingClientRect();</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>// Награды</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const expGain = newLevel * 10;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const coinBonus = Math.pow(2, newLevel);</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.exp += expGain;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.coins += coinBonus;</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (newLevel &gt; this.maxLevel) {</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>this.maxLevel = newLevel;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>this.showFloatingText(`Новый рекорд: ${newLevel} уровень!`, rect.left + 50, rect.top, '#ffd700');</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.showFloatingText(`+${this.formatNumber(coinBonus)}💰`, rect.left + 50, rect.top + 30, '#ffd700');</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.showFloatingText(`+${expGain}⭐`, rect.left + 50, rect.top + 60, '#4ecdc4');</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>// Удаляем старые, добавляем новый</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const newItems = this.items.filter((_, i) =&gt; i !== idx1 &amp;&amp; i !== idx2);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>newItems.push({ level: newLevel });</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.items = newItems;</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.createParticles(rect.left + 50, rect.top + 50);</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>// Проверка победы</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (newLevel &gt;= 100) {</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>this.victory();</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.render();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.showFloatingText('Разные уровни!', window.innerWidth/2, window.innerHeight/2, '#ff6b6b');</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.selectedIndex = null;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.render();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>buySlot() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (this.coins &gt;= this.costs.slot) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.coins -= this.costs.slot;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.slots++;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.costs.slot = Math.floor(this.costs.slot * 1.5);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.render();</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.showFloatingText('+1 слот!', window.innerWidth/2, window.innerHeight/2, '#4ecdc4');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>boostIncome() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (this.coins &gt;= this.costs.boost) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.coins -= this.costs.boost;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.incomeMultiplier *= 2;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.costs.boost = Math.floor(this.costs.boost * 3);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.render();</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.showFloatingText('Доход x2!', window.innerWidth/2, window.innerHeight/2, '#ffd700');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>buyAutoMerge() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (this.autoMergeUnlocked) return;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (this.coins &gt;= this.costs.autoMerge) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.coins -= this.costs.autoMerge;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.autoMergeUnlocked = true;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.startAutoMerge();</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.render();</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.showFloatingText('Авто-слияние активировано!', window.innerWidth/2, window.innerHeight/2, '#ff6b6b');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>startAutoMerge() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.autoMergeInterval = setInterval(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>// Ищем пары для автослияния</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const levels = {};</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.items.forEach((item, idx) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>if (!levels[item.level]) levels[item.level] = [];</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>levels[item.level].push(idx);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>});</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>for (let level in levels) {</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>if (levels[level].length &gt;= 2) {</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>this.tryMerge(levels[level][0], levels[level][1]);</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>break;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}, 2000);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>buyHighLevel() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (this.coins &gt;= this.costs.highLevel) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.coins -= this.costs.highLevel;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.items.push({ level: this.shopLevel });</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.shopLevel += 5;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.costs.highLevel = Math.floor(this.costs.highLevel * 5);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.render();</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.showFloatingText(`Куплен ${this.shopLevel - 5} уровень!`, window.innerWidth/2, window.innerHeight/2, '#9b5de5');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>victory() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('final-score').textContent = this.formatNumber(this.coins);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('victory').classList.add('active');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.createFireworks();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>showFloatingText(text, x, y, color) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const el = document.createElement('div');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>el.className = 'floating-text';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>el.textContent = text;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>el.style.left = x + 'px';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>el.style.top = y + 'px';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>el.style.color = color;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.body.appendChild(el);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>setTimeout(() =&gt; el.remove(), 1000);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>createParticles(x, y) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const canvas = document.getElementById('particles');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const ctx = canvas.getContext('2d');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>canvas.width = window.innerWidth;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>canvas.height = window.innerHeight;</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>for (let i = 0; i &lt; 20; i++) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const particle = document.createElement('div');</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>particle.className = 'particle';</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>particle.style.left = x + 'px';</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>particle.style.top = y + 'px';</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>particle.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>particle.style.setProperty('--ty', (Math.random() - 0.5) * 200 + 'px');</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>particle.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>document.body.appendChild(particle);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>setTimeout(() =&gt; particle.remove(), 1000);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>createFireworks() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>setInterval(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const x = Math.random() * window.innerWidth;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const y = Math.random() * window.innerHeight;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>this.createParticles(x, y);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}, 500);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>updateUI() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('coins').textContent = this.formatNumber(this.coins);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('exp').textContent = this.formatNumber(this.exp);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('max-level').textContent = this.maxLevel;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('income-display').textContent = this.formatNumber(this.getIncome());</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Обновление прогресса монет (визуальный)</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const progress = Math.min(100, (this.coins / (this.coins + 1000)) * 100);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('coin-progress').style.width = progress + '%';</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Обновление цен</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('slot-cost').textContent = this.formatNumber(this.costs.slot);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('boost-cost').textContent = this.formatNumber(this.costs.boost);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('auto-merge-cost').textContent = this.autoMergeUnlocked ? 'Куплено' : this.formatNumber(this.costs.autoMerge);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('high-level-cost').textContent = this.formatNumber(this.costs.highLevel);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('shop-level').textContent = this.shopLevel;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>render() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.updateUI();</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>const container = document.getElementById('game-area');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>container.innerHTML = '';</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Отображаем существующие предметы</p>
-<p class="p1"><span class="Apple-converted-space">                </span>this.items.forEach((item, index) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const div = document.createElement('div');</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>div.className = 'item';</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (index === this.selectedIndex) div.classList.add('selected');</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (item.level &gt;= 100) div.classList.add('max-level');</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>div.style.background = this.getItemColor(item.level);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>div.dataset.index = index;</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>div.innerHTML = `</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="item-icon"&gt;${this.getItemEmoji(item.level)}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="item-level"&gt;${item.level}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>`;</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>div.onclick = () =&gt; this.selectItem(index);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>container.appendChild(div);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>});</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Пустые слоты</p>
-<p class="p1"><span class="Apple-converted-space">                </span>for (let i = this.items.length; i &lt; this.slots; i++) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const div = document.createElement('div');</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>div.className = 'item';</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>div.style.background = 'rgba(255,255,255,0.05)';</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>div.style.border = '2px dashed rgba(255,255,255,0.2)';</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>div.style.cursor = 'default';</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>div.innerHTML = '&lt;div style="opacity: 0.3; font-size: 2em;"&gt;+&lt;/div&gt;';</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>container.appendChild(div);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Обновление состояния кнопок</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const buttons = document.querySelectorAll('.btn');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>buttons[0].disabled = this.items.length &gt;= this.slots || this.coins &lt; 10;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>buttons[1].disabled = this.autoMergeUnlocked || this.coins &lt; this.costs.autoMerge;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const game = new Game();</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Адаптация размера canvas</p>
-<p class="p1"><span class="Apple-converted-space">        </span>window.addEventListener('resize', () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const canvas = document.getElementById('particles');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>canvas.width = window.innerWidth;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>canvas.height = window.innerHeight;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+    <div class="game-container">
+        <div class="header">
+            <h1>🔥 MERGE 100 🔥</h1>
+            <p>Соединяй одинаковые предметы, достигни 100 уровня!</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">💰 Монеты</div>
+                <div class="stat-value coins" id="coins">1</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="coin-progress" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">⭐ Опыт</div>
+                <div class="stat-value exp" id="exp">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">🏆 Макс. Уровень</div>
+                <div class="stat-value level" id="max-level">1</div>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            💡 <strong>Совет:</strong> Выбери два одинаковых предмета, чтобы соединить их. 
+            Каждое соединение даёт опыт и увеличивает доход! 
+            <br>Автодоход: <span id="income-display">1</span> монет/сек
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="game.spawnItem()">🎲 Создать предмет (10 монет)</button>
+            <button class="btn" onclick="game.buyAutoMerge()">🤖 Авто-слияние (<span id="auto-merge-cost">1000</span>)</button>
+        </div>
+
+        <div class="game-area" id="game-area"></div>
+
+        <div class="shop">
+            <h2>🛒 Магазин улучшений</h2>
+            <div class="shop-items">
+                <div class="shop-item" onclick="game.buySlot()">
+                    <div>📦 Новый слот</div>
+                    <div style="color: #ffd700; margin-top: 5px;">💰 <span id="slot-cost">100</span></div>
+                </div>
+                <div class="shop-item" onclick="game.boostIncome()">
+                    <div>⚡ Ускорить доход x2</div>
+                    <div style="color: #ffd700; margin-top: 5px;">💰 <span id="boost-cost">500</span></div>
+                </div>
+                <div class="shop-item" onclick="game.buyHighLevel()">
+                    <div>🚀 Купить уровень <span id="shop-level">5</span></div>
+                    <div style="color: #ffd700; margin-top: 5px;">💰 <span id="high-level-cost">10000</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="victory-screen" id="victory">
+        <div class="victory-title">🎉 ПОБЕДА! 🎉</div>
+        <p style="font-size: 1.5em; margin-bottom: 30px;">Вы достигли 100 уровня!</p>
+        <p style="font-size: 1.2em; margin-bottom: 20px;">Финальный счёт: <span id="final-score"></span></p>
+        <button class="btn" onclick="location.reload()">🔄 Играть снова</button>
+    </div>
+
+    <canvas class="particles" id="particles"></canvas>
+
+    <script>
+        class Game {
+            constructor() {
+                this.coins = 10;
+                this.exp = 0;
+                this.maxLevel = 1;
+                this.items = [];
+                this.selectedIndex = null;
+                this.slots = 12;
+                this.incomeMultiplier = 1;
+                this.baseIncome = 1;
+                this.lastIncome = 0;
+                this.autoMergeUnlocked = false;
+                this.autoMergeInterval = null;
+                
+                // Цены
+                this.costs = {
+                    slot: 100,
+                    boost: 500,
+                    autoMerge: 1000,
+                    highLevel: 10000
+                };
+                
+                this.shopLevel = 5;
+                
+                this.emojis = ['🌱', '🌿', '🌲', '💎', '🔮', '⚡', '🔥', '⭐', '🌟', '💫', '🌙', '☀️', '🪐', '👑', '🏆', '🎯', '🎪', '🎨', '🎭', '🎪'];
+                this.colors = [
+                    '#2ecc71', '#27ae60', '#229954', '#1e8449', '#1abc9c',
+                    '#16a085', '#3498db', '#2980b9', '#9b59b6', '#8e44ad',
+                    '#e74c3c', '#c0392b', '#f39c12', '#d68910', '#f1c40f',
+                    '#d4ac0d', '#e67e22', '#d35400', '#95a5a6', '#7f8c8d',
+                    '#34495e', '#2c3e50', '#1abc9c', '#16a085', '#2ecc71'
+                ];
+
+                this.init();
+            }
+
+            init() {
+                this.render();
+                this.startIncome();
+                this.spawnInitialItems();
+            }
+
+            spawnInitialItems() {
+                for (let i = 0; i < 4; i++) {
+                    this.items.push({ level: 1 });
+                }
+                this.render();
+            }
+
+            getItemColor(level) {
+                if (level >= 100) return `linear-gradient(45deg, #ffd700, #ff6b6b, #4ecdc4)`;
+                if (level >= 90) return `linear-gradient(45deg, #ff006e, #8338ec, #3a86ff)`;
+                if (level >= 80) return `linear-gradient(45deg, #f72585, #7209b7, #3a0ca3)`;
+                if (level >= 70) return `linear-gradient(45deg, #ff006e, #ffbe0b, #fb5607)`;
+                if (level >= 60) return `linear-gradient(45deg, #00f5ff, #00bbf9, #00f5d4)`;
+                if (level >= 50) return `linear-gradient(45deg, #9b5de5, #f15bb5, #00bbf9)`;
+                if (level >= 40) return `linear-gradient(45deg, #00bbf9, #00f5d4, #fee440)`;
+                if (level >= 30) return `linear-gradient(45deg, #f15bb5, #fee440, #00f5d4)`;
+                if (level >= 20) return `linear-gradient(45deg, #9b5de5, #00bbf9, #00f5d4)`;
+                return this.colors[(level - 1) % this.colors.length] || '#2ecc71';
+            }
+
+            getItemEmoji(level) {
+                if (level >= 100) return '👑';
+                if (level >= 90) return '💎';
+                if (level >= 80) return '🔮';
+                if (level >= 70) return '⚡';
+                if (level >= 60) return '🔥';
+                if (level >= 50) return '🌟';
+                if (level >= 40) return '⭐';
+                if (level >= 30) return '🌙';
+                if (level >= 20) return '🪐';
+                return this.emojis[(level - 1) % this.emojis.length] || '✨';
+            }
+
+            formatNumber(num) {
+                if (num >= 1e100) return num.toExponential(2);
+                if (num >= 1e18) return (num / 1e18).toFixed(1) + 'Qi';
+                if (num >= 1e15) return (num / 1e15).toFixed(1) + 'Qa';
+                if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T';
+                if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+                if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+                if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+                return Math.floor(num).toString();
+            }
+
+            getIncome() {
+                let income = 0;
+                this.items.forEach(item => {
+                    income += Math.pow(2, item.level - 1);
+                });
+                return income * this.incomeMultiplier;
+            }
+
+            startIncome() {
+                setInterval(() => {
+                    const income = this.getIncome();
+                    this.coins += income;
+                    this.lastIncome = income;
+                    this.updateUI();
+                }, 1000);
+            }
+
+            spawnItem() {
+                if (this.items.length >= this.slots) {
+                    this.showFloatingText('Нет места!', window.innerWidth/2, window.innerHeight/2, '#ff6b6b');
+                    return;
+                }
+                if (this.coins < 10) {
+                    this.showFloatingText('Недостаточно монет!', window.innerWidth/2, window.innerHeight/2, '#ff6b6b');
+                    return;
+                }
+                
+                this.coins -= 10;
+                
+                // Шанс получить предмет выше 1 уровня
+                let level = 1;
+                const rand = Math.random();
+                if (rand > 0.95 && this.maxLevel >= 10) level = Math.min(10, Math.floor(this.maxLevel / 2));
+                else if (rand > 0.8 && this.maxLevel >= 5) level = Math.min(5, Math.floor(this.maxLevel / 3));
+                else if (rand > 0.6 && this.maxLevel >= 3) level = 2;
+                
+                this.items.push({ level });
+                this.render();
+                this.createParticles(window.innerWidth/2, window.innerHeight/2);
+            }
+
+            selectItem(index) {
+                if (this.selectedIndex === null) {
+                    this.selectedIndex = index;
+                    this.render();
+                } else if (this.selectedIndex === index) {
+                    this.selectedIndex = null;
+                    this.render();
+                } else {
+                    this.tryMerge(this.selectedIndex, index);
+                    this.selectedIndex = null;
+                }
+            }
+
+            tryMerge(idx1, idx2) {
+                const item1 = this.items[idx1];
+                const item2 = this.items[idx2];
+
+                if (item1.level === item2.level) {
+                    // Успешное слияние
+                    const newLevel = item1.level + 1;
+                    const rect = document.querySelector(`[data-index="${idx2}"]`).getBoundingClientRect();
+                    
+                    // Награды
+                    const expGain = newLevel * 10;
+                    const coinBonus = Math.pow(2, newLevel);
+                    
+                    this.exp += expGain;
+                    this.coins += coinBonus;
+                    
+                    if (newLevel > this.maxLevel) {
+                        this.maxLevel = newLevel;
+                        this.showFloatingText(`Новый рекорд: ${newLevel} уровень!`, rect.left + 50, rect.top, '#ffd700');
+                    }
+                    
+                    this.showFloatingText(`+${this.formatNumber(coinBonus)}💰`, rect.left + 50, rect.top + 30, '#ffd700');
+                    this.showFloatingText(`+${expGain}⭐`, rect.left + 50, rect.top + 60, '#4ecdc4');
+                    
+                    // Удаляем старые, добавляем новый
+                    const newItems = this.items.filter((_, i) => i !== idx1 && i !== idx2);
+                    newItems.push({ level: newLevel });
+                    this.items = newItems;
+                    
+                    this.createParticles(rect.left + 50, rect.top + 50);
+                    
+                    // Проверка победы
+                    if (newLevel >= 100) {
+                        this.victory();
+                    }
+                    
+                    this.render();
+                } else {
+                    this.showFloatingText('Разные уровни!', window.innerWidth/2, window.innerHeight/2, '#ff6b6b');
+                    this.selectedIndex = null;
+                    this.render();
+                }
+            }
+
+            buySlot() {
+                if (this.coins >= this.costs.slot) {
+                    this.coins -= this.costs.slot;
+                    this.slots++;
+                    this.costs.slot = Math.floor(this.costs.slot * 1.5);
+                    this.render();
+                    this.showFloatingText('+1 слот!', window.innerWidth/2, window.innerHeight/2, '#4ecdc4');
+                }
+            }
+
+            boostIncome() {
+                if (this.coins >= this.costs.boost) {
+                    this.coins -= this.costs.boost;
+                    this.incomeMultiplier *= 2;
+                    this.costs.boost = Math.floor(this.costs.boost * 3);
+                    this.render();
+                    this.showFloatingText('Доход x2!', window.innerWidth/2, window.innerHeight/2, '#ffd700');
+                }
+            }
+
+            buyAutoMerge() {
+                if (this.autoMergeUnlocked) return;
+                if (this.coins >= this.costs.autoMerge) {
+                    this.coins -= this.costs.autoMerge;
+                    this.autoMergeUnlocked = true;
+                    this.startAutoMerge();
+                    this.render();
+                    this.showFloatingText('Авто-слияние активировано!', window.innerWidth/2, window.innerHeight/2, '#ff6b6b');
+                }
+            }
+
+            startAutoMerge() {
+                this.autoMergeInterval = setInterval(() => {
+                    // Ищем пары для автослияния
+                    const levels = {};
+                    this.items.forEach((item, idx) => {
+                        if (!levels[item.level]) levels[item.level] = [];
+                        levels[item.level].push(idx);
+                    });
+                    
+                    for (let level in levels) {
+                        if (levels[level].length >= 2) {
+                            this.tryMerge(levels[level][0], levels[level][1]);
+                            break;
+                        }
+                    }
+                }, 2000);
+            }
+
+            buyHighLevel() {
+                if (this.coins >= this.costs.highLevel) {
+                    this.coins -= this.costs.highLevel;
+                    this.items.push({ level: this.shopLevel });
+                    this.shopLevel += 5;
+                    this.costs.highLevel = Math.floor(this.costs.highLevel * 5);
+                    this.render();
+                    this.showFloatingText(`Куплен ${this.shopLevel - 5} уровень!`, window.innerWidth/2, window.innerHeight/2, '#9b5de5');
+                }
+            }
+
+            victory() {
+                document.getElementById('final-score').textContent = this.formatNumber(this.coins);
+                document.getElementById('victory').classList.add('active');
+                this.createFireworks();
+            }
+
+            showFloatingText(text, x, y, color) {
+                const el = document.createElement('div');
+                el.className = 'floating-text';
+                el.textContent = text;
+                el.style.left = x + 'px';
+                el.style.top = y + 'px';
+                el.style.color = color;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 1000);
+            }
+
+            createParticles(x, y) {
+                const canvas = document.getElementById('particles');
+                const ctx = canvas.getContext('2d');
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                
+                for (let i = 0; i < 20; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = x + 'px';
+                    particle.style.top = y + 'px';
+                    particle.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');
+                    particle.style.setProperty('--ty', (Math.random() - 0.5) * 200 + 'px');
+                    particle.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                    document.body.appendChild(particle);
+                    setTimeout(() => particle.remove(), 1000);
+                }
+            }
+
+            createFireworks() {
+                setInterval(() => {
+                    const x = Math.random() * window.innerWidth;
+                    const y = Math.random() * window.innerHeight;
+                    this.createParticles(x, y);
+                }, 500);
+            }
+
+            updateUI() {
+                document.getElementById('coins').textContent = this.formatNumber(this.coins);
+                document.getElementById('exp').textContent = this.formatNumber(this.exp);
+                document.getElementById('max-level').textContent = this.maxLevel;
+                document.getElementById('income-display').textContent = this.formatNumber(this.getIncome());
+                
+                // Обновление прогресса монет (визуальный)
+                const progress = Math.min(100, (this.coins / (this.coins + 1000)) * 100);
+                document.getElementById('coin-progress').style.width = progress + '%';
+                
+                // Обновление цен
+                document.getElementById('slot-cost').textContent = this.formatNumber(this.costs.slot);
+                document.getElementById('boost-cost').textContent = this.formatNumber(this.costs.boost);
+                document.getElementById('auto-merge-cost').textContent = this.autoMergeUnlocked ? 'Куплено' : this.formatNumber(this.costs.autoMerge);
+                document.getElementById('high-level-cost').textContent = this.formatNumber(this.costs.highLevel);
+                document.getElementById('shop-level').textContent = this.shopLevel;
+            }
+
+            render() {
+                this.updateUI();
+                
+                const container = document.getElementById('game-area');
+                container.innerHTML = '';
+                
+                // Отображаем существующие предметы
+                this.items.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'item';
+                    if (index === this.selectedIndex) div.classList.add('selected');
+                    if (item.level >= 100) div.classList.add('max-level');
+                    
+                    div.style.background = this.getItemColor(item.level);
+                    div.dataset.index = index;
+                    
+                    div.innerHTML = `
+                        <div class="item-icon">${this.getItemEmoji(item.level)}</div>
+                        <div class="item-level">${item.level}</div>
+                    `;
+                    
+                    div.onclick = () => this.selectItem(index);
+                    container.appendChild(div);
+                });
+                
+                // Пустые слоты
+                for (let i = this.items.length; i < this.slots; i++) {
+                    const div = document.createElement('div');
+                    div.className = 'item';
+                    div.style.background = 'rgba(255,255,255,0.05)';
+                    div.style.border = '2px dashed rgba(255,255,255,0.2)';
+                    div.style.cursor = 'default';
+                    div.innerHTML = '<div style="opacity: 0.3; font-size: 2em;">+</div>';
+                    container.appendChild(div);
+                }
+                
+                // Обновление состояния кнопок
+                const buttons = document.querySelectorAll('.btn');
+                buttons[0].disabled = this.items.length >= this.slots || this.coins < 10;
+                buttons[1].disabled = this.autoMergeUnlocked || this.coins < this.costs.autoMerge;
+            }
+        }
+
+        const game = new Game();
+
+        // Адаптация размера canvas
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('particles');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
 </body>
 </html>
